@@ -24,19 +24,27 @@ class Transportation_updateRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|unique:transportations,name,',
-            'description' => 'required',
-            'sunday' => 'required',
-            'monday' => 'required',
-            'tuesday' => 'required',
-            'wednesday' => 'required',
-            'thursday' => 'required',
-            'friday' => 'required',
-            'saturday' => 'required',
-            'lines_img'=>'required|image',
-            'transportation_img'=>'required|image',
-            'prices'=>'required',
-            'city_id'=>'required'
+            'name' => 'required|unique:transportations,name,' . $this->transportation_id,
+            'description' => 'required|string',
+            'sunday_open' => 'nullable|date_format:H:i',
+            'sunday_close' => 'nullable|date_format:H:i|after:sunday_open',
+            'monday_open' => 'nullable|date_format:H:i',
+            'monday_close' => 'nullable|date_format:H:i|after:monday_open',
+            'tuesday_open' => 'nullable|date_format:H:i',
+            'tuesday_close' => 'nullable|date_format:H:i|after:tuesday_open',
+            'wednesday_open' => 'nullable|date_format:H:i',
+            'wednesday_close' => 'nullable|date_format:H:i|after:wednesday_open',
+            'thursday_open' => 'nullable|date_format:H:i',
+            'thursday_close' => 'nullable|date_format:H:i|after:thursday_open',
+            'friday_open' => 'nullable|date_format:H:i',
+            'friday_close' => 'nullable|date_format:H:i|after:friday_open',
+            'saturday_open' => 'nullable|date_format:H:i',
+            'saturday_close' => 'nullable|date_format:H:i|after:saturday_open',
+            'lines_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'transportation_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'prices' => 'nullable|string',
+            'city_id' => 'nullable|exists:cities,id',
+            'app_link' => 'nullable|url', // Added validation rule for app_link
         ];
     }
 }

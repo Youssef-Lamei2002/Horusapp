@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Http\Requests\Landmark_createRequest;
 use App\Http\Requests\Landmark_deleteRequest;
 use App\Http\Requests\Landmark_readRequest;
 use App\Http\Requests\Landmark_updateRequest;
+use App\Http\Requests\LandmarkCreateRequest;
 use App\Http\Requests\LandmarkRequest;
 use App\Http\Requests\Transportation_updateRequest;
 use App\Models\Landmark;

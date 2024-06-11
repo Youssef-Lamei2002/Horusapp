@@ -14,7 +14,22 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class Tourguide extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
-    protected  $fillable = ['name','email','password','gender','nationality','phone_number','profile_pic','ssn'];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'gender',
+        'nationality',
+        'phone_number',
+        'profile_pic',
+        'ssn',
+        'email_type',
+        'isBlocked',
+        'isApproved',
+        'rate',
+        'price',
+        'city_id',
+    ];
     public function getJWTIdentifier()
     {
         return $this->getKey();

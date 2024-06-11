@@ -1,8 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\Forget_passwordController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LandmarkController;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\ProfileSettingController;
+use App\Http\Controllers\Reservation_tourguideController;
 use App\Http\Controllers\TransportationController;
 use App\Models\Transportation;
 use Illuminate\Http\Request;
@@ -37,3 +42,23 @@ Route::post('/create_transportation',[TransportationController::class, 'create_t
 Route::post('/update_transportation',[TransportationController::class, 'update_transportation']);
 Route::get('read_transportation',[TransportationController::class, 'read_transportation']);
 Route::post('/delete_transportation',[TransportationController::class, 'delete_transportation']);
+Route::post('/checkEmailExists', [Forget_passwordController::class, 'checkEmailExists']);
+Route::post('/verifyOtpAndUpdatePassword', [Forget_passwordController::class, 'verifyOtpAndUpdatePassword']);
+Route::post('/updatePassword', [Forget_passwordController::class, 'updatePassword']);
+Route::post('/create_city', [CityController::class, 'create_city']);
+Route::post('/update_city', [CityController::class, 'update_city']);
+Route::post('/delete_city', [CityController::class, 'delete_city']);
+Route::get('/read_city', [CityController::class, 'read_city']);
+Route::post('/updateName', [ProfileSettingController::class, 'updateName']);
+Route::post('/addLanguage', [ProfileSettingController::class, 'addLanguage']);
+Route::post('/removeLanguage', [ProfileSettingController::class, 'removeLanguage']);
+Route::post('/updatePassword', [ProfileSettingController::class, 'updatePassword']);
+Route::post('/updateCity', [ProfileSettingController::class, 'updateCity']);
+Route::get('/read_language', [LanguageController::class, 'read_language']);
+Route::Post('/create_language', [LanguageController::class, 'create_language']);
+Route::Post('/delete_language', [LanguageController::class, 'delete_language']);
+Route::post('/createReservation', [Reservation_tourguideController::class, 'createReservation']);
+
+
+
+

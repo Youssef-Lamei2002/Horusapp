@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('gender')->comment('1:male,0:female');
             $table->string('nationality');
             $table->string('phone_number');
-            $table->string('profile_pic');
+            $table->string('profile_pic')->nullable();
             $table->boolean('email_type')->default(0);
         });
     }

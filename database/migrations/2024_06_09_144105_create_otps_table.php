@@ -13,13 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tourguide__languages', function (Blueprint $table) {
+        Schema::create('otps', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('tourguide_id');
+            $table->unsignedBigInteger('tourist_id')->nullable();
+            $table->unsignedBigInteger('tourguide_id')->nullable();
+            $table->string('otp')->nullable();
+            $table->timestamp('expires_at')->nullable();
+            $table->foreign('tourist_id')->references('id')->on('tourists');
             $table->foreign('tourguide_id')->references('id')->on('tourguides');
-            $table->unsignedBigInteger('language_id');
-            $table->foreign('language_id')->references('id')->on('languages');
         });
     }
 
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tourguide__languages');
+        Schema::dropIfExists('otps');
     }
 };

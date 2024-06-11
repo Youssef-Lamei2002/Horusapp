@@ -25,7 +25,12 @@ return new class extends Migration
             $table->string('profile_pic');
             $table->string('ssn');
             $table->boolean('email_type')->default(1);
-
+            $table->boolean('isBlocked')->default(0);
+            $table->boolean('isApproved')->default(0);
+            $table->float('rate')->nullable();
+            $table->float('price');
+            $table->unsignedBigInteger('city_id');
+            $table->foreign('city_id')->references('id')->on('cities');   
         });
     }
 

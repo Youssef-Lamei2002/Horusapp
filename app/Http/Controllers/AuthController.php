@@ -30,6 +30,11 @@ class AuthController extends Controller
             {
                 Tourguide_Language::create(['tourguide_id'=>$tourguide->id,'language_id'=>$language]);
             }
+            $data['nationality']='Egypt';
+            $data['rate']=Null;
+            $date['isBlocked']=0;
+            $date['isApproved']=0;
+
         }
         return response()->json(['message' => 'Successfully Registered']);
     }
