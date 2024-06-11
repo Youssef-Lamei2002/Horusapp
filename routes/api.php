@@ -58,7 +58,7 @@ Route::get('/read_language', [LanguageController::class, 'read_language']);
 Route::Post('/create_language', [LanguageController::class, 'create_language']);
 Route::Post('/delete_language', [LanguageController::class, 'delete_language']);
 Route::post('/createReservation', [Reservation_tourguideController::class, 'createReservation']);
-
+Route::post('/artisanOrder', [LandmarkController::class, 'artisanOrder'])->name('artisanOrder');
 
 
 

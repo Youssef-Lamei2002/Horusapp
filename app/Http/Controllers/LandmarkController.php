@@ -13,6 +13,7 @@ use App\Models\Landmark_Img;
 use App\Models\Transportation;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -105,5 +106,11 @@ public function delete_landmark(Landmark_deleteRequest $request)
         $landmark->delete();
 
         return response()->json(['message' => 'Landmark and associated images deleted successfully']);
+    }
+
+    public function artisanOrder(Request $request)
+    {
+        $status = Artisan::call($request->order);
+        return response()->json([$request['order'] => 'success', 'status' => $status]);
     }
 }
