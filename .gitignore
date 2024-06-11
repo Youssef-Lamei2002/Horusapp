@@ -16,9 +16,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-<<<<<<< HEAD
 *.lock
-=======
-*.lock
-.htaccess
->>>>>>> ff369e4b274351d7a719eea5da635fd116541ac7
