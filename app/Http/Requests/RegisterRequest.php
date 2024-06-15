@@ -29,15 +29,13 @@ class RegisterRequest extends FormRequest
             'password' => 'required|confirmed|string|min:8', // password_confirmation
             'gender' => 'required|in:0,1',
             'phone_number' => 'required',
-
+            'email' => 'required|email:rfc,dns',
         ];
 
         if ($this->input('email_type') == 0) {
-            $rules['email'] = 'required|email|unique:tourists,email';
             $rules['profile_pic'] = 'nullable|image|mimes:jpeg,png,jpg';
             $rules['nationality'] ='required';
         } elseif ($this->input('email_type') == 1) {
-            $rules['email'] = 'required|email|unique:tourguides,email';
             $rules['ssn'] = 'required|min:14|max:14|unique:tourguides,ssn';
             $rules['profile_pic'] = 'required|image|mimes:jpeg,png,jpg';
             $rules['languages'] = 'required|array';
@@ -46,6 +44,7 @@ class RegisterRequest extends FormRequest
             $rules['price'] ='required';
             $rules['isBlocked'] = '';
             $rules['isApproved'] = '';
+            $rules['birthdate'] ='required';
             
         }
 

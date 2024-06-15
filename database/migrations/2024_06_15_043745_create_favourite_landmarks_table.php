@@ -13,9 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('favourites', function (Blueprint $table) {
+        Schema::create('favourite_landmarks', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->unsignedBigInteger('tourist_id');
+            $table->foreign('tourist_id')->references('id')->on('tourists');
+            $table->unsignedBigInteger('landmark_id');
+            $table->foreign('landmark_id')->references('id')->on('landmarks');
         });
     }
 
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('favourites');
+        Schema::dropIfExists('favourite_landmarks');
     }
 };

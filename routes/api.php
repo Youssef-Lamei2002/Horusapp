@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\Favorite_landmarkController;
 use App\Http\Controllers\Forget_passwordController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LandmarkController;
@@ -29,7 +30,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/create_landmark',[LandmarkController::class, 'create_landmark']);
 Route::post('/delete_landmark',[LandmarkController::class, 'delete_landmark']);
 Route::post('/update_landmark',[LandmarkController::class, 'update_landmark']);
-Route::get('/read_landmark',[LandmarkController::class, 'read_landmark']);
+Route::get('/read_landmark', [LandmarkController::class, 'read_landmark']);
 Route::post('/create_hotel',[HotelController::class, 'create_hotel']);
 Route::get('/read_hotel',[HotelController::class, 'read_hotel']);
 Route::post('/delete_hotel',[HotelController::class, 'delete_hotel']);
@@ -59,6 +60,7 @@ Route::Post('/create_language', [LanguageController::class, 'create_language']);
 Route::Post('/delete_language', [LanguageController::class, 'delete_language']);
 Route::post('/createReservation', [Reservation_tourguideController::class, 'createReservation']);
 Route::post('/artisanOrder', [LandmarkController::class, 'artisanOrder'])->name('artisanOrder');
-
-
-
+Route::get('imgs/landmark/{imageName}', [LandmarkController::class, 'getLandmarkImage'])->name('landmark.image');
+Route::post('/favorite_landmark', [Favorite_landmarkController::class, 'favourite'])->name('favorite.landmark');
+Route::get('/read_favorite_landmarks', [Favorite_landmarkController::class, 'read_favorite_landmarks']);
+Route::post('/remove_favourite', [Favorite_landmarkController::class, 'remove_favourite']);

@@ -19,20 +19,20 @@ class CityController extends Controller
         ]);
     
         // Store the city image
-        $cityImgPath = $request->file('city_img')->store('imgs/city');
+        $cityImgPath = $request->file('city_img')->store('public/imgs/city');
     
         // Store the city cover image
-        $cityCoverPath = $request->file('city_cover')->store('imgs/city');
+        $cityCoverPath = $request->file('city_cover')->store('public/imgs/city');
     
         // Create a new city record
-        $city = new City();
-        $city->city_name = $request->city_name;
-        $city->city_img = $cityImgPath;
-        $city->city_cover = $cityCoverPath;
-        $city->save();
+        $city = City::create([
+            'city_name' => $request->city_name,
+            'city_img' => $cityImgPath,
+            'city_cover' => $cityCoverPath,
+        ]);
     
         // Return a success response
-        return response()->json(['message' => 'City created successfully'], 201);
+        return response()->json(['message' => 'City created successfully'], 200);
     }
     public function update_city(Request $request)
     {
@@ -60,12 +60,33 @@ class CityController extends Controller
         $city->city_name = $request->city_name;
         $city->save();
     
-        return response()->json(['message' => 'City updated successfully', 'city' => $city]);
+        return response()->json(['message' => 'City updated successfully']);
     }
     public function read_city()
-{
-    $cities = City::all();
-    return response()->json(['cities' => $cities]);
+    {
+        $cities = City::all();
+    
+        // Check if there are no cities found
+        if ($cities->isEmpty()) {
+            return response()->json(['message' => 'No cities found.'], 404);
+        }
+    
+        $citiesWithImages = [];
+    
+        foreach ($cities as $city) {
+            // Convert the city to an array
+            $cityData = $city->toArray();
+    
+            // Append city image URLs
+            $cityData['city_img'] = url('storage/' . str_replace('public/', '', $city->city_img));
+            $cityData['city_cover'] = url('storage/' . str_replace('public/', '', $city->city_cover));
+    
+            // Add the city with images to the result array
+            $citiesWithImages[] = $cityData;
+        }
+    
+        // Return the cities with their images as a JSON response
+        return response()->json(['cities' => $citiesWithImages]);
     }
     public function delete_city(Request $request)
 {

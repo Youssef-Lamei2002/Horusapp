@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
-            $table->string('email')->email()->unique();
+            $table->string('email');
             $table->string('password');
             $table->boolean('gender')->comment('1:male,0:female');
             $table->string('nationality');

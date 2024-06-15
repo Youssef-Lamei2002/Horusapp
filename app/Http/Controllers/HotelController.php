@@ -19,30 +19,35 @@ class HotelController extends Controller
 {
     public function create_Hotel(Hotel_createRequest $request)
     {
+        // Create the hotel record with the provided request data
         $hotel = Hotel::create($request->all());
     
-        // Check if the fields exist and are arrays
-        if ($request->has('imgs') && is_array($request->imgs)) {
+        // Handle the image uploads if the 'imgs' field is present and is an array
+        if ($request->has('imgs') && is_array($request->file('imgs'))) {
             foreach ($request->file('imgs') as $image) {
-                $img = $image->store('imgs/hotel');
-                Hotel_Img::create(['img' => $img, 'hotel_id' => $hotel->id]);
+                $imgPath = $image->store('public/imgs/hotel');
+                Hotel_Img::create(['img' => $imgPath, 'hotel_id' => $hotel->id]);
             }
         }
     
-        // Check if booking data exists before accessing it
-        if ($request->has('booking_link') && $request->has('booking_img_id')) {
-            $bookingData = [
-                'hotel_id' => $hotel->id,
-                'booking_img_id' => $request->booking_img_id[0], // Accessing the first element
-                'booking_link' => $request->booking_link[0] // Accessing the first element
-            ];
-            Hotel_Booking::create($bookingData);
+        // Handle the booking data if 'booking_link' and 'booking_img_id' fields are present
+        if ($request->has('booking_link') && $request->has('booking_img_id') && is_array($request->booking_link) && is_array($request->booking_img_id)) {
+            foreach ($request->booking_link as $index => $link) {
+                if (isset($request->booking_img_id[$index])) {
+                    $bookingData = [
+                        'hotel_id' => $hotel->id,
+                        'booking_img_id' => $request->booking_img_id[$index],
+                        'booking_link' => $link
+                    ];
+                    Hotel_Booking::create($bookingData);
+                }
+            }
         }
     
         return response()->json(['message' => 'Successfully Created']);
     }
     
-    public function read_Hotel()
+    public function read_Hotel(Request $request)
     {
         // Fetch all hotels
         $hotels = Hotel::all();
@@ -52,34 +57,32 @@ class HotelController extends Controller
         
         // Loop through each hotel
         foreach ($hotels as $hotel) {
-            // Fetch images related to the current hotel
+            // Retrieve images for the current hotel
             $images = Hotel_Img::where('hotel_id', $hotel->id)->get();
             
-            // Fetch booking information related to the current hotel
+            // Convert the hotel to an array
+            $hotelData = $hotel->toArray();
+    
+            // Add the images to the hotel data
+            $hotelData['images'] = $images->map(function ($image) {
+                // Convert the relative path to a full URL
+                $image->img = url('storage/' . str_replace('public/', '', $image->img));
+                return $image;
+            })->toArray();
+            
+            // Retrieve bookings for the current hotel
             $bookings = Hotel_Booking::where('hotel_id', $hotel->id)->get();
             
-            // Initialize array to store hotel data along with related images and bookings
-            $hotelData = $hotel->toArray();
-            
-            // Add images to hotel data
-            $hotelData['images'] = $images->toArray();
-            
-            // Initialize array to store booking data
-            $hotelBookings = [];
-            
-            // Loop through each booking related to the current hotel
-            foreach ($bookings as $booking) {
-                // Fetch booking image related to the booking
+            // Add booking data along with the booking image
+            $hotelData['bookings'] = $bookings->map(function ($booking) {
+                // Retrieve the booking image
                 $bookingImage = Hotel_Booking_Img::find($booking->booking_img_id);
                 
-                // Add booking data along with the booking image to hotel bookings array
+                // Convert booking to array and add the booking image
                 $bookingData = $booking->toArray();
-                $bookingData['booking_image'] = $bookingImage ? $bookingImage->toArray() : null;
-                $hotelBookings[] = $bookingData;
-            }
-            
-            // Add bookings to hotel data
-            $hotelData['bookings'] = $hotelBookings;
+                $bookingData['booking_image'] = $bookingImage ? url('storage/' . str_replace('public/', '', $bookingImage->img)) : null;
+                return $bookingData;
+            })->toArray();
             
             // Add hotel data to array
             $hotelsWithRelatedData[] = $hotelData;
@@ -88,6 +91,7 @@ class HotelController extends Controller
         // Return JSON response with hotels and related data
         return response()->json(['hotels' => $hotelsWithRelatedData]);
     }
+    
     
     
     public function delete_hotel(Hotel_deleteRequest $request)
@@ -111,45 +115,61 @@ class HotelController extends Controller
     
 
     public function update_hotel(Hotel_updateRequest $request)
-{
-    $hotel = Hotel::find($request->hotel_id);
-
-    if (!$hotel) {
-        return response()->json(['error' => 'Hotel not found']);
-    }
-
-    // Check if new images are uploaded
-    if ($request->hasFile('imgs')) {
-        // Delete the old images if they exist
-        $oldImages = Hotel_Img::where('hotel_id', $hotel->id)->get();
-        foreach ($oldImages as $oldImage) {
-            Storage::delete($oldImage->img);
-            $oldImage->delete();
+    {
+        // Find the hotel record by its ID
+        $hotel = Hotel::find($request->hotel_id);
+    
+        // Check if the hotel exists
+        if (!$hotel) {
+            return response()->json(['error' => 'Hotel not found'], 404);
         }
-
-        // Upload and save the new images
-        foreach ($request->file('imgs') as $image) {
-            $img = $image->store('imgs/hotel');
-            Hotel_Img::create(['img' => $img, 'hotel_id' => $hotel->id]);
+    
+        // Handle image uploads if 'imgs' field is present and is an array
+        if ($request->hasFile('imgs') && is_array($request->file('imgs'))) {
+            // Delete existing images associated with the hotel
+            $oldImages = Hotel_Img::where('hotel_id', $hotel->id)->get();
+            foreach ($oldImages as $oldImage) {
+                Storage::delete($oldImage->img);
+                $oldImage->delete();
+            }
+    
+            // Upload and save new images
+            foreach ($request->file('imgs') as $image) {
+                $imgPath = $image->store('public/imgs/hotel');
+                Hotel_Img::create(['img' => $imgPath, 'hotel_id' => $hotel->id]);
+            }
         }
+    
+        // Update other hotel data
+        $hotel->update($request->except(['imgs', 'booking_link', 'booking_img_id']));
+    
+        // Update bookings if 'booking_link' and 'booking_img_id' fields are present
+        if ($request->has('booking_link') && $request->has('booking_img_id')) {
+            // Ensure 'booking_link' and 'booking_img_id' are arrays
+            if (is_array($request->booking_link) && is_array($request->booking_img_id)) {
+                // Delete existing bookings for the hotel
+                Hotel_Booking::where('hotel_id', $hotel->id)->delete();
+    
+                // Iterate over each pair of 'booking_link' and 'booking_img_id'
+                foreach ($request->booking_link as $index => $link) {
+                    if (isset($request->booking_img_id[$index])) {
+                        $bookingData = [
+                            'hotel_id' => $hotel->id,
+                            'booking_img_id' => $request->booking_img_id[$index],
+                            'booking_link' => $link
+                        ];
+                        Hotel_Booking::create($bookingData);
+                    }
+                }
+            } else {
+                return response()->json(['error' => 'Booking link and booking image ID must be arrays'], 400);
+            }
+        }
+    
+        // Return success response
+        return response()->json(['message' => 'Successfully Updated']);
     }
-
-    // Update other hotel data
-    $hotel->update($request->except(['imgs']));
-
-    // Update bookings if necessary
-    if ($request->has('booking_link')) {
-        $hotel->update(['booking_link' => $request->booking_link]);
-    }
-
-    if ($request->has('booking_img_id')) {
-        // You can handle updating booking image IDs here
-        // For example, you might want to delete old booking images and add new ones
-        // You can implement this logic similar to how images are handled above
-    }
-
-    return response()->json(['message' => 'Successfully Updated']);
-}
+    
 
     
 
@@ -163,7 +183,7 @@ class HotelController extends Controller
 public function create_booking_img(Booking_img_createRequest $request)
 {
     // Store the image
-    $imgPath = $request->file('img')->store('imgs/booking_img');
+    $imgPath = $request->file('img')->store('public/imgs/booking_img');
 
     // Create a new booking image record
     $bookingImg = Hotel_Booking_Img::create(['img' => $imgPath]);
@@ -173,32 +193,47 @@ public function create_booking_img(Booking_img_createRequest $request)
 
 public function read_booking_img()
 {
+    // Fetch all booking images
     $bookingImgs = Hotel_Booking_Img::all();
 
+    // Check if no booking images are found
     if ($bookingImgs->isEmpty()) {
-        return response()->json(['message' => 'No booking images found']);
+        return response()->json(['message' => 'No booking images found'], 404);
     }
 
-    return response()->json($bookingImgs);
+    // Map booking images to include full URL paths
+    $bookingImgsWithFullUrls = $bookingImgs->map(function ($image) {
+        $image->img = url('storage/' . str_replace('public/', '', $image->img));
+        return $image;
+    });
+
+    // Return the booking images with full URL paths as a JSON response
+    return response()->json(['booking_images' => $bookingImgsWithFullUrls]);
 }
 
 public function update_booking_img(Booking_img_updateRequest $request)
 {
     $bookingImg = Hotel_Booking_Img::find($request->id);
+
+    // Check if booking image exists
     if (!$bookingImg) {
         return response()->json(['message' => 'Booking image not found'], 404);
     }
-    if ($request->has('img')) {
+
+    // If a new image is uploaded, delete the old image and store the new one
+    if ($request->hasFile('img')) {
+        // Delete the old image if it exists
         if (Storage::exists($bookingImg->img)) {
             Storage::delete($bookingImg->img);
         }
-        
-        // Store the new image
-        $bookingImg->img = $request->img->store('imgs/booking_img');
-    }
 
-    // Save the changes to the booking image
-    $bookingImg->save();
+        // Store the new image
+        $imgPath = $request->file('img')->store('public/imgs/booking_img');
+
+        // Update the booking image record with the new image path
+        $bookingImg->img = $imgPath;
+        $bookingImg->save();
+    }
 
     // Return a success response
     return response()->json(['message' => 'Booking image updated successfully']);

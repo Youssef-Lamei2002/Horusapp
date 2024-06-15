@@ -84,7 +84,14 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Landmark::class,
         ],
-
+        'disks' => [
+            'public' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => env('APP_URL') . '/storage',
+            'visibility' => 'public',
+        ],
+],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

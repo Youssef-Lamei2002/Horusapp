@@ -8,6 +8,7 @@ use App\Models\Tourist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class Forget_passwordController extends Controller
@@ -45,6 +46,12 @@ class Forget_passwordController extends Controller
                     'otp' => $otp,
                     'expires_at' => now()->addMinutes(5) // Set expiration time to 1 minute from now
                 ]);
+                $data['title'] = "Horus APP";
+                $data['otp'] = $otp;
+                $email = $tourist->email;
+                Mail::send('setotp',  ['otp' => $data['otp']], function ($message) use ($data, $email) {
+                $message->to($email)->subject($data['title']);
+        });
                 return response()->json(['message' => 'Email exists and OTP created'], 200);
             }
         } elseif ($emailType == 1) {
@@ -65,6 +72,12 @@ class Forget_passwordController extends Controller
                     'otp' => $otp,
                     'expires_at' => now()->addMinutes(5) // Set expiration time to 1 minute from now
                 ]);
+                $data['title'] = "Horus APP";
+                $data['otp'] = $otp;
+                $email = $tourguide->email;
+                Mail::send('setotp',  ['otp' => $data['otp']], function ($message) use ($data, $email) {
+            $message->to($email)->subject($data['title']);
+        });
                 return response()->json(['message' => 'Email exists and OTP created'], 200);
             }
         }

@@ -25,11 +25,11 @@ class LoginRequest extends FormRequest
     {
         if (request()->email_type == 0)
         {
-            $email = 'required|email|exists:tourists,email';
+            $email = 'required';
         }
         elseif (request()->email_type == 1)
         {
-            $email = 'required|email|exists:tourguides,email';
+            $email = 'required';
         }
         return [
             'email' => $email,

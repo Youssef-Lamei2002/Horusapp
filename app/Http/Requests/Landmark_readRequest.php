@@ -23,7 +23,6 @@ class Landmark_readRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-        ];
+        return [ ];
 }
 }
