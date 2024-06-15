@@ -52,8 +52,8 @@ class CityController extends Controller
             Storage::delete($city->city_cover);
     
             // Upload and save the new images
-            $city->city_img = $city_img->store('imgs/city');
-            $city->city_cover = $city_cover->store('imgs/city');
+            $city->city_img = $city_img->store('public/imgs/city');
+            $city->city_cover = $city_cover->store('public/imgs/city');
         }
     
         // Update other city data
