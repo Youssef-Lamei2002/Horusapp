@@ -27,8 +27,8 @@ class CityController extends Controller
         // Create a new city record
         $city = City::create([
             'city_name' => $request->city_name,
-            'city_img' => $cityImgPath,
-            'city_cover' => $cityCoverPath,
+            'city_img' => url("api/images/city/".$cityImgPath),
+            'city_cover' => url("api/images/city/".$cityCoverPath),
         ]);
     
         // Return a success response

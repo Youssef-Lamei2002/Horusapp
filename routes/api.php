@@ -5,6 +5,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\Favorite_landmarkController;
 use App\Http\Controllers\Forget_passwordController;
 use App\Http\Controllers\HotelController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\LandmarkController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileSettingController;
@@ -64,3 +65,4 @@ Route::get('imgs/landmark/{imageName}', [LandmarkController::class, 'getLandmark
 Route::post('/favorite_landmark', [Favorite_landmarkController::class, 'favourite'])->name('favorite.landmark');
 Route::get('/read_favorite_landmarks', [Favorite_landmarkController::class, 'read_favorite_landmarks']);
 Route::post('/remove_favourite', [Favorite_landmarkController::class, 'remove_favourite']);
+Route::get('images/city/{name}', [ImageController::class, 'imageCity']);
