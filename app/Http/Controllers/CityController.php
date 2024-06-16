@@ -73,17 +73,17 @@ class CityController extends Controller
     
         $citiesWithImages = [];
     
-        foreach ($cities as $city) {
-            // Convert the city to an array
-            $cityData = $city->toArray();
+        // foreach ($cities as $city) {
+        //     // Convert the city to an array
+        //     $cityData = $city->toArray();
     
-            // Append city image URLs
-            $cityData['city_img'] = url('storage/' . str_replace('public/', '', $city->city_img));
-            $cityData['city_cover'] = url('storage/' . str_replace('public/', '', $city->city_cover));
+        //     // Append city image URLs
+        //     $cityData['city_img'] = url('storage/' . str_replace('public/', '', $city->city_img));
+        //     $cityData['city_cover'] = url('storage/' . str_replace('public/', '', $city->city_cover));
     
-            // Add the city with images to the result array
-            $citiesWithImages[] = $cityData;
-        }
+        //     // Add the city with images to the result array
+        //     $citiesWithImages[] = $cityData;
+        // }
     
         // Return the cities with their images as a JSON response
         return response()->json(['cities' => $citiesWithImages]);
