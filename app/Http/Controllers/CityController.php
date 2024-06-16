@@ -17,18 +17,19 @@ class CityController extends Controller
             'city_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
             'city_cover' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
         ]);
-    
         // Store the city image
-        $cityImgPath = $request->file('city_img')->store('public/imgs/city');
-    
+        // $cityImgPath = $request->file('city_img')->store('public/imgs/city');
+        $cityImg =  time()  . '.' . request('city_img')->extension();
+        request('city_img')->storeAs("public/imgs/city",$cityImg );
         // Store the city cover image
-        $cityCoverPath = $request->file('city_cover')->store('public/imgs/city');
-    
+        // $cityCoverPath = $request->file('city_cover')->store('public/imgs/city');
+        $cityCover =  time()  . '.' . request('city_cover')->extension();
+        request('city_cover')->storeAs("public/imgs/city", $cityCover);
         // Create a new city record
         $city = City::create([
             'city_name' => $request->city_name,
-            'city_img' => url("api/images/city/".$cityImgPath),
-            'city_cover' => url("api/images/city/".$cityCoverPath),
+            'city_img' => url("api/images/city/".$cityImg),
+            'city_cover' => url("api/images/city/".$cityCover),
         ]);
     
         // Return a success response
