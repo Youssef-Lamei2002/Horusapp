@@ -71,7 +71,7 @@ class CityController extends Controller
             return response()->json(['message' => 'No cities found.'], 404);
         }
     
-        $citiesWithImages = [];
+       // $citiesWithImages = [];
     
         // foreach ($cities as $city) {
         //     // Convert the city to an array
@@ -86,7 +86,7 @@ class CityController extends Controller
         // }
     
         // Return the cities with their images as a JSON response
-        return response()->json(['cities' => $citiesWithImages]);
+        return response()->json(['cities' => $cities]);
     }
     public function delete_city(Request $request)
 {
