@@ -6,7 +6,7 @@ use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Validator;
-
+use Illuminate\Support\Str;
 class CityController extends Controller
 {
     public function create_city(Request $request)
@@ -17,9 +17,9 @@ class CityController extends Controller
             'city_img' => 'required|image|max:2048', // max 2MB
             'city_cover' => 'required|image|max:2048', // max 2MB
         ]);
-        $cityImg =  time()  . '.' . request('city_img')->extension();
+        $cityImg =  Str::uuid()  . '.' . request('city_img')->extension();
         request('city_img')->storeAs("public/imgs/city",$cityImg );
-        $cityCover =  time()  . '.' . request('city_cover')->extension();
+        $cityCover =  Str::uuid()  . '.' . request('city_cover')->extension();
         request('city_cover')->storeAs("public/imgs/city", $cityCover);
         // Create a new city record
         $city = City::create([
