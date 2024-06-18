@@ -66,3 +66,9 @@ Route::post('/favorite_landmark', [Favorite_landmarkController::class, 'favourit
 Route::get('/read_favorite_landmarks', [Favorite_landmarkController::class, 'read_favorite_landmarks']);
 Route::post('/remove_favourite', [Favorite_landmarkController::class, 'remove_favourite']);
 Route::get('images/city/{name}', [ImageController::class, 'imageCity']);
+Route::get('images/landmark/{name}', [ImageController::class, 'imageLandmark']);
+Route::get('images/hotel/{name}', [ImageController::class, 'imageHotel']);
+Route::get('images/booking_img/{name}',  [ImageController::class, 'imageBookingHotel']);
+Route::get('images/transportation/{name}',  [ImageController::class, 'imagetransportation']);
+Route::get('images/profile_pic/{name}',  [ImageController::class, 'imagetProfile_pic']);
+

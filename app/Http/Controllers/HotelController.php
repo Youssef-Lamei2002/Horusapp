@@ -14,6 +14,7 @@ use App\Models\Hotel_Booking_Img;
 use App\Models\Hotel_Img;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HotelController extends Controller
 {
@@ -25,8 +26,12 @@ class HotelController extends Controller
         // Handle the image uploads if the 'imgs' field is present and is an array
         if ($request->has('imgs') && is_array($request->file('imgs'))) {
             foreach ($request->file('imgs') as $image) {
-                $imgPath = $image->store('public/imgs/hotel');
-                Hotel_Img::create(['img' => $imgPath, 'hotel_id' => $hotel->id]);
+                $imgName = Str::uuid() . '.' . $image->extension(); // Generate unique image name using UUID
+                $image->storeAs('public/imgs/hotel', $imgName); // Store image with unique name in 'public/imgs/hotel' directory
+                Hotel_Img::create([
+                    'img' => url("api/images/hotel/" . $imgName), // Example URL format
+                    'hotel_id' => $hotel->id,
+                ]);
             }
         }
     
@@ -44,53 +49,69 @@ class HotelController extends Controller
             }
         }
     
-        return response()->json(['message' => 'Successfully Created']);
+        // Return a success response
+        return response()->json(['message' => 'Hotel created successfully'], 200);
     }
+    
     
     public function read_Hotel(Request $request)
     {
-        // Fetch all hotels
-        $hotels = Hotel::all();
-        
+        // Retrieve city_id from query parameters
+        $city_id = $request->query('city_id');
+    
+        // Validate that city_id is provided
+        if (!$city_id) {
+            return response()->json(['message' => 'City ID is required.'], 200);
+        }
+    
+        // Fetch all hotels for the specified city_id
+        $hotels = Hotel::where('city_id', $city_id)->get();
+    
+        // Check if no hotels are found
+        if ($hotels->isEmpty()) {
+            return response()->json(['message' => 'No hotels found for the specified city.'], 200);
+        }
+    
         // Initialize array to store hotels with related data
         $hotelsWithRelatedData = [];
-        
+    
         // Loop through each hotel
         foreach ($hotels as $hotel) {
             // Retrieve images for the current hotel
             $images = Hotel_Img::where('hotel_id', $hotel->id)->get();
-            
+    
             // Convert the hotel to an array
             $hotelData = $hotel->toArray();
     
             // Add the images to the hotel data
             $hotelData['images'] = $images->map(function ($image) {
                 // Convert the relative path to a full URL
-                $image->img = url('storage/' . str_replace('public/', '', $image->img));
+                $image->img = url($image->img);
                 return $image;
             })->toArray();
-            
+    
             // Retrieve bookings for the current hotel
             $bookings = Hotel_Booking::where('hotel_id', $hotel->id)->get();
-            
+    
             // Add booking data along with the booking image
             $hotelData['bookings'] = $bookings->map(function ($booking) {
                 // Retrieve the booking image
                 $bookingImage = Hotel_Booking_Img::find($booking->booking_img_id);
-                
+    
                 // Convert booking to array and add the booking image
                 $bookingData = $booking->toArray();
-                $bookingData['booking_image'] = $bookingImage ? url('storage/' . str_replace('public/', '', $bookingImage->img)) : null;
+                $bookingData['booking_image'] = $bookingImage ? url($bookingImage->img) : null;
                 return $bookingData;
             })->toArray();
-            
+    
             // Add hotel data to array
             $hotelsWithRelatedData[] = $hotelData;
         }
-        
+    
         // Return JSON response with hotels and related data
         return response()->json(['hotels' => $hotelsWithRelatedData]);
     }
+    
     
     
     
@@ -98,7 +119,7 @@ class HotelController extends Controller
     {
         $hotel = Hotel::find($request->hotel_id);
             if (!$hotel) {
-            return response()->json(['error' => 'Hotel not found'], 404);
+            return response()->json(['message' => 'Hotel not found'], 200);
         }
         $hotelImages = Hotel_Img::where('hotel_id', $hotel->id)->get();
         foreach ($hotelImages as $image) {
@@ -121,7 +142,7 @@ class HotelController extends Controller
     
         // Check if the hotel exists
         if (!$hotel) {
-            return response()->json(['error' => 'Hotel not found'], 404);
+            return response()->json(['message' => 'Hotel not found'], 404);
         }
     
         // Handle image uploads if 'imgs' field is present and is an array
@@ -129,14 +150,21 @@ class HotelController extends Controller
             // Delete existing images associated with the hotel
             $oldImages = Hotel_Img::where('hotel_id', $hotel->id)->get();
             foreach ($oldImages as $oldImage) {
-                Storage::delete($oldImage->img);
+                // Extract the path from the URL and delete the file from storage
+                $filePath = str_replace(url('/') . '/storage/', 'public/', $oldImage->img);
+                Storage::delete($filePath);
+                // Delete the record from the database
                 $oldImage->delete();
             }
     
             // Upload and save new images
             foreach ($request->file('imgs') as $image) {
-                $imgPath = $image->store('public/imgs/hotel');
-                Hotel_Img::create(['img' => $imgPath, 'hotel_id' => $hotel->id]);
+                $imgName = Str::uuid() . '.' . $image->extension(); // Generate unique image name using UUID
+                $image->storeAs('public/imgs/hotel', $imgName); // Store image with unique name in 'public/imgs/hotel' directory
+                Hotel_Img::create([
+                    'img' => url("storage/imgs/hotel/" . $imgName), // Example URL format
+                    'hotel_id' => $hotel->id,
+                ]);
             }
         }
     
@@ -162,7 +190,7 @@ class HotelController extends Controller
                     }
                 }
             } else {
-                return response()->json(['error' => 'Booking link and booking image ID must be arrays'], 400);
+                return response()->json(['message' => 'Booking link and booking image ID must be arrays'], 422);
             }
         }
     
@@ -180,16 +208,21 @@ class HotelController extends Controller
 
 
 
-public function create_booking_img(Booking_img_createRequest $request)
-{
-    // Store the image
-    $imgPath = $request->file('img')->store('public/imgs/booking_img');
-
-    // Create a new booking image record
-    $bookingImg = Hotel_Booking_Img::create(['img' => $imgPath]);
-
-    return response()->json(['message' => 'Booking image created successfully']);
-}
+    public function create_booking_img(Booking_img_createRequest $request)
+    {
+        // Store the image with a unique filename
+        $imgName = time() . '.' . $request->file('img')->extension();
+        $request->file('img')->storeAs('public/imgs/booking_img', $imgName);
+    
+        // Create a new booking image record
+        $bookingImg = Hotel_Booking_Img::create([
+            'img' => url("api/images/booking_img/".$imgName),
+        ]);
+    
+        // Return a success response
+        return response()->json(['message' => 'Booking image created successfully'], 200);
+    }
+    
 
 public function read_booking_img()
 {
@@ -198,12 +231,12 @@ public function read_booking_img()
 
     // Check if no booking images are found
     if ($bookingImgs->isEmpty()) {
-        return response()->json(['message' => 'No booking images found'], 404);
+        return response()->json(['message' => 'No booking images found'], 200);
     }
 
     // Map booking images to include full URL paths
     $bookingImgsWithFullUrls = $bookingImgs->map(function ($image) {
-        $image->img = url('storage/' . str_replace('public/', '', $image->img));
+        $image->img = url($image->img);
         return $image;
     });
 
@@ -217,7 +250,7 @@ public function update_booking_img(Booking_img_updateRequest $request)
 
     // Check if booking image exists
     if (!$bookingImg) {
-        return response()->json(['message' => 'Booking image not found'], 404);
+        return response()->json(['message' => 'Booking image not found'], 200);
     }
 
     // If a new image is uploaded, delete the old image and store the new one
@@ -227,11 +260,12 @@ public function update_booking_img(Booking_img_updateRequest $request)
             Storage::delete($bookingImg->img);
         }
 
-        // Store the new image
-        $imgPath = $request->file('img')->store('public/imgs/booking_img');
+        // Store the new image with a unique filename
+        $imgName = time() . '.' . $request->file('img')->extension();
+        $imgPath = $request->file('img')->storeAs('public/imgs/booking_img', $imgName);
 
         // Update the booking image record with the new image path
-        $bookingImg->img = $imgPath;
+        $bookingImg->img = url("api/images/booking_img/" . $imgName);
         $bookingImg->save();
     }
 
@@ -241,13 +275,14 @@ public function update_booking_img(Booking_img_updateRequest $request)
 
 
 
+
 public function delete_booking_img(Booking_img_deleteRequest $request)
 {
     // Find the booking image by its ID
     $bookingImg = Hotel_Booking_Img::find($request->id);
     if (!$bookingImg) {
-        // If not found, return a 404 response
-        return response()->json(['message' => 'Booking image not found'], 404);
+        // If not found, return a response
+        return response()->json(['message' => 'Booking image not found'], 200);
     }
 
     // Check if the image exists in storage and delete it

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OTP;
+use App\Models\Otp;
 use App\Models\Tourguide;
 use App\Models\Tourist;
 use Illuminate\Http\Request;
@@ -36,7 +36,7 @@ class Forget_passwordController extends Controller
                 $recentOTPRequest = OTP::where('tourist_id', $tourist->id)->where('created_at', '>=', now()->subMinutes($cooldownMinutes))->first();
                 if ($recentOTPRequest) {
                     // If a recent OTP request exists, return a message indicating the cooldown period
-                    return response()->json(['message' => 'Too many requests. Please wait for ' . $cooldownMinutes . ' minutes before requesting a new OTP.'], 429);
+                    return response()->json(['message' => 'Too many requests. Please wait for ' . $cooldownMinutes . ' minutes before requesting a new OTP.'], 200);
                 }
                 // Generate OTP
                 $otp = $this->generateOtp();
@@ -83,7 +83,7 @@ class Forget_passwordController extends Controller
         }
 
         // If the email does not exist in the specified model, return an error response
-        return response()->json(['message' => 'Email not found'], 404);
+        return response()->json(['message' => 'Email not found'], 200);
     }
 
     // Function to generate OTP of 4 random characters
@@ -116,12 +116,12 @@ class Forget_passwordController extends Controller
         } elseif ($emailType == 1) {
             $user = Tourguide::where('email', $email)->first();
         } else {
-            return response()->json(['message' => 'Invalid email type'], 400);
+            return response()->json(['message' => 'Invalid email type'], 200);
         }
     
         // If user not found, return error
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['message' => 'User not found'], 200);
         }
     
         // Verify OTP
@@ -142,7 +142,7 @@ class Forget_passwordController extends Controller
             return response()->json(['message' => 'OTP is valid and password updated successfully'], 200);
         } else {
             // OTP is either expired or incorrect
-            return response()->json(['message' => 'OTP is expired or incorrect'], 400);
+            return response()->json(['message' => 'OTP is expired or incorrect'], 200);
         }
     }
     

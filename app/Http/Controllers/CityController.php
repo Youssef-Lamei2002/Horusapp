@@ -14,15 +14,11 @@ class CityController extends Controller
         // Validate the request data
         $request->validate([
             'city_name' => 'required|string|unique:cities',
-            'city_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
-            'city_cover' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+            'city_img' => 'required|image|max:2048', // max 2MB
+            'city_cover' => 'required|image|max:2048', // max 2MB
         ]);
-        // Store the city image
-        // $cityImgPath = $request->file('city_img')->store('public/imgs/city');
         $cityImg =  time()  . '.' . request('city_img')->extension();
         request('city_img')->storeAs("public/imgs/city",$cityImg );
-        // Store the city cover image
-        // $cityCoverPath = $request->file('city_cover')->store('public/imgs/city');
         $cityCover =  time()  . '.' . request('city_cover')->extension();
         request('city_cover')->storeAs("public/imgs/city", $cityCover);
         // Create a new city record
@@ -37,56 +33,55 @@ class CityController extends Controller
     }
     public function update_city(Request $request)
     {
+        // Validate the request data
+        $request->validate([
+            'city_id' => 'required|exists:cities,id',
+            'city_name' => 'required|string|unique:cities,city_name,' . $request->city_id,
+            'city_img' => 'nullable|image|max:2048', // max 2MB
+            'city_cover' => 'nullable|image|max:2048', // max 2MB
+        ]);
+    
+        // Find the city by ID
         $city = City::find($request->city_id);
     
-        if (!$city) {
-            return response()->json(['error' => 'City not found'], 404);
+        // Update city images if new images are uploaded
+        if ($request->hasFile('city_img')) {
+            // Delete the old city image if it exists
+            if ($city->city_img) {
+                Storage::delete(str_replace(url(''), '', $city->city_img));
+            }
+            // Store the new city image
+            $cityImg = time() . '.' . $request->file('city_img')->extension();
+            $request->file('city_img')->storeAs('public/imgs/city', $cityImg);
+            $city->city_img = url("api/images/city/" . $cityImg);
         }
     
-        $city_img = $request->file('city_img');
-        $city_cover = $request->file('city_cover');
-    
-        // Check if new images are uploaded
-        if ($city_img && $city_cover) {
-            // Delete the old images if they exist
-            Storage::delete($city->city_img);
-            Storage::delete($city->city_cover);
-    
-            // Upload and save the new images
-            $city->city_img = $city_img->store('public/imgs/city');
-            $city->city_cover = $city_cover->store('public/imgs/city');
+        if ($request->hasFile('city_cover')) {
+            // Delete the old city cover image if it exists
+            if ($city->city_cover) {
+                Storage::delete(str_replace(url(''), '', $city->city_cover));
+            }
+            // Store the new city cover image
+            $cityCover = time() . '.' . $request->file('city_cover')->extension();
+            $request->file('city_cover')->storeAs('public/imgs/city', $cityCover);
+            $city->city_cover = url("api/images/city/" . $cityCover);
         }
     
         // Update other city data
         $city->city_name = $request->city_name;
         $city->save();
     
-        return response()->json(['message' => 'City updated successfully']);
+        // Return a success response
+        return response()->json(['message' => 'City updated successfully'], 200);
     }
+    
     public function read_city()
     {
         $cities = City::all();
-    
         // Check if there are no cities found
         if ($cities->isEmpty()) {
             return response()->json(['message' => 'No cities found.'], 404);
         }
-    
-       // $citiesWithImages = [];
-    
-        // foreach ($cities as $city) {
-        //     // Convert the city to an array
-        //     $cityData = $city->toArray();
-    
-        //     // Append city image URLs
-        //     $cityData['city_img'] = url('storage/' . str_replace('public/', '', $city->city_img));
-        //     $cityData['city_cover'] = url('storage/' . str_replace('public/', '', $city->city_cover));
-    
-        //     // Add the city with images to the result array
-        //     $citiesWithImages[] = $cityData;
-        // }
-    
-        // Return the cities with their images as a JSON response
         return response()->json(['cities' => $cities]);
     }
     public function delete_city(Request $request)

@@ -18,18 +18,29 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class LandmarkController extends Controller
 {
+
     public function create_landmark(Landmark_createRequest $request)
     {
-        $landmark=Landmark::create($request->all());
-        foreach ($request->file('imgs') as $image){
-            $img = $image->store('public/imgs/landmark');
-            Landmark_Img::create(['img'=>$img,'landmark_id'=>$landmark->id]);
+        // Create a new landmark record
+        $landmark = Landmark::create($request->all());
+    
+        // Store the landmark images and create Landmark_Img records
+        foreach ($request->file('imgs') as $image) {
+            $imgName = str::uuid() . '.' . $image->extension();
+            $image->storeAs('public/imgs/landmark', $imgName);
+            Landmark_Img::create([
+                'img' => url("api/images/landmark/" . $imgName),
+                'landmark_id' => $landmark->id,
+            ]);
         }
-        return response()->json(['message' => 'Successfully Created']);
+    
+        // Return a success response
+        return response()->json(['message' => 'Landmark created successfully'], 200);
     }
+
 
     public function read_landmark(Request $request)
     {
@@ -37,13 +48,13 @@ class LandmarkController extends Controller
     
         // Validate that city_id is provided
         if (!$city_id) {
-            return response()->json(['message' => 'City ID is required.'], 400);
+            return response()->json(['message' => 'City ID is required.'], 200);
         }
     
         // Retrieve all landmarks with the given city_id
         $landmarks = Landmark::where('city_id', $city_id)->get();
         if ($landmarks->isEmpty()) {
-            return response()->json(['message' => 'No landmarks found for the specified city.'], 404);
+            return response()->json(['message' => 'No landmarks found for the specified city.'], 200);
         }
     
         $landmarksWithImages = [];
@@ -57,7 +68,7 @@ class LandmarkController extends Controller
             // Add the images to the landmark data
             $landmarkData['images'] = $images->map(function ($image) {
                 // Convert the relative path to a full URL
-                $image->img = url('storage/' . str_replace('public/', '', $image->img));
+                $image->img = url($image->img);
                 return $image;
             })->toArray();
     
@@ -76,7 +87,7 @@ class LandmarkController extends Controller
     
         // Check if landmark exists
         if (!$landmark) {
-            return response()->json(['error' => 'Landmark not found'], 404);
+            return response()->json(['message' => 'Landmark not found'], 200);
         }
     
         // Update the landmark with the new details
@@ -87,21 +98,28 @@ class LandmarkController extends Controller
             // Delete the old images if they exist
             $oldImages = Landmark_Img::where('landmark_id', $landmark->id)->get();
             foreach ($oldImages as $oldImage) {
+                // Extract the relative file path from the URL
+                $relativeFilePath = str_replace(url('/api/images/landmark/'), '', $oldImage->img);
                 // Delete the file from storage
-                Storage::delete($oldImage->img);
+                Storage::delete('public/imgs/landmark/' . $relativeFilePath);
                 // Delete the record from the database
                 $oldImage->delete();
             }
     
             // Upload and save the new images
             foreach ($request->file('imgs') as $image) {
-                $img = $image->store('public/imgs/landmark');
-                Landmark_Img::create(['img' => $img, 'landmark_id' => $landmark->id]);
+                $imgName = Str::uuid() . '.' . $image->extension();
+                $image->storeAs('public/imgs/landmark', $imgName);
+                Landmark_Img::create([
+                    'img' => url("api/images/landmark/" . $imgName),
+                    'landmark_id' => $landmark->id,
+                ]);
             }
         }
     
         return response()->json(['message' => 'Successfully Updated']);
     }
+    
     
 
 
@@ -112,7 +130,7 @@ class LandmarkController extends Controller
     
         // Check if the landmark exists
         if (!$landmark) {
-            return response()->json(['error' => 'Landmark not found'], 404);
+            return response()->json(['error' => 'Landmark not found'], 200);
         }
     
         // Delete associated images
@@ -142,7 +160,7 @@ class LandmarkController extends Controller
         $path = public_path("imgs/landmark/$imageName");
 
         if (!file_exists($path)) {
-            return response()->json(['message' => 'Image not found'], 404);
+            return response()->json(['message' => 'Image not found'], 200);
         }
 
         return response()->file($path);

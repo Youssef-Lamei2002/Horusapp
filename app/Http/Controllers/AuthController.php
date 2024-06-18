@@ -125,10 +125,18 @@ class AuthController extends Controller
         // Handle profile picture upload
         if ($request->hasFile('profile_pic')) {
             $profilePic = $request->file('profile_pic');
-            $profilePicPath = $profilePic->store('public/profile_pics'); // Store profile pic in storage/app/public/profile_pics
-            $data['profile_pic'] = Storage::url($profilePicPath); // Save the relative path to the database
+    
+            // Generate a unique name for the profile picture
+            $profilePicName = time() . '.' . $profilePic->extension();
+    
+            // Store the profile picture in the specified directory
+            $profilePicPath = $profilePic->storeAs('public/profile_pics', $profilePicName);
+    
+            // Assuming you want to store the full URL in the database
+            $data['profile_pic'] = url("storage/profile_pics/" . $profilePicName); // Adjust the URL path as per your storage configuration
         }
     
+        // Create a new user based on email_type
         if ($request->input('email_type') == 0) {
             // Create a Tourist
             Tourist::create($data);
@@ -153,5 +161,6 @@ class AuthController extends Controller
         // Return a success message with a 200 status code
         return response()->json(['message' => 'Successfully Registered'], 200);
     }
-
+    
+    
 }

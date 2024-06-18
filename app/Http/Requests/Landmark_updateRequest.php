@@ -52,7 +52,7 @@ class Landmark_updateRequest extends FormRequest
             'city_id' => 'required|exists:cities,id',
             'landmark_id' => 'required|exists:landmarks,id',
             'imgs' => 'required|array',
-            'imgs.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust max file size as needed
+            'imgs.*' => 'image|max:2048', // Adjust max file size as needed
             'needTourguide'
         ];
     }

@@ -40,36 +40,6 @@ class ProfileSettingController extends Controller
 
         return response()->json(['message' => 'Name updated successfully']);
     }
-    public function updatePassword(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string|min:8',
-            'confirm_password' => 'required|string|same:password',
-            'email_type' => 'required|boolean', // 0 for Tourist, 1 for Tourguide
-        ]);
-
-        $email = $request->input('email');
-        $password = $request->input('password');
-        $emailType = $request->input('email_type');
-
-        if ($emailType == 0) {
-            $user = Tourist::where('email', $email)->first();
-        } elseif ($emailType == 1) {
-            $user = Tourguide::where('email', $email)->first();
-        } else {
-            return response()->json(['error' => 'Invalid email type'], 400);
-        }
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        $user->password = Hash::make($password);
-        $user->save();
-
-        return response()->json(['message' => 'Password updated successfully']);
-    }
     public function addLanguage(Request $request)
     {
         // Validate the incoming request data

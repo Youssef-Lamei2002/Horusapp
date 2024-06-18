@@ -73,7 +73,7 @@ class Favorite_landmarkController extends Controller
             $landmarkData = $landmark->toArray();
             
             $landmarkData['images'] = $images->map(function ($image) {
-                $image->img = url('storage/' . str_replace('public/', '', $image->img));
+                $image->img = url($image->img);
                 return $image;
             })->toArray();
             

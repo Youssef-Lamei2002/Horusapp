@@ -22,7 +22,7 @@ class LanguageController extends Controller
             'name' => $request->name,
         ]);
 
-        return response()->json(['language' => $language], 201);
+        return response()->json(['language' => $language], 200);
     }
     public function update_language(Request $request)
 {
@@ -40,7 +40,7 @@ class LanguageController extends Controller
 
     // Check if the language exists
     if (!$language) {
-        return response()->json(['message' => 'Language not found'], 404);
+        return response()->json(['message' => 'Language not found'], 200);
     }
 
     // Update the language name
@@ -64,7 +64,7 @@ class LanguageController extends Controller
 
         // Check if the language exists
         if (!$language) {
-            return response()->json(['message' => 'Language not found'], 404);
+            return response()->json(['message' => 'Language not found'], 200);
         }
 
         // Delete the language

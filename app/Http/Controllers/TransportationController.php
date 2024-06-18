@@ -16,27 +16,46 @@ class TransportationController extends Controller
         // Validate the request data
         $validatedData = $request->validated();
     
-        // Create a new Transportation instance with validated data
-        $transportation = Transportation::create($validatedData);
-    
         // Handle the transportation image upload
-        if ($request->hasFile('transportation_img')) {
-            $transportation_img = $request->file('transportation_img')->store('public/imgs/transportation');
-            $transportation->transportation_img = $transportation_img;
-        }
+        $transportationImgName = time() . '_transportation.' . request('transportation_img')->extension();
+        request('transportation_img')->storeAs('public/imgs/transportation', $transportationImgName);
+        $transportationImgUrl = url("api/images/transportation/" . $transportationImgName);
     
         // Handle the lines image upload
-        if ($request->hasFile('lines_img')) {
-            $lines_img = $request->file('lines_img')->store('public/imgs/transportation');
-            $transportation->lines_img = $lines_img;
-        }
+        $linesImgName = time() . '_lines.' . request('lines_img')->extension();
+        request('lines_img')->storeAs('public/imgs/transportation', $linesImgName);
+        $linesImgUrl = url("api/images/transportation/" . $linesImgName);
     
-        // Save the updated transportation model
-        $transportation->save();
+        // Create a new Transportation instance with validated data
+        $transportation = Transportation::create([
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'],
+            'sunday_open' => $validatedData['sunday_open'],
+            'sunday_close' => $validatedData['sunday_close'],
+            'monday_open' => $validatedData['monday_open'],
+            'monday_close' => $validatedData['monday_close'],
+            'tuesday_open' => $validatedData['tuesday_open'],
+            'tuesday_close' => $validatedData['tuesday_close'],
+            'wednesday_open' => $validatedData['wednesday_open'],
+            'wednesday_close' => $validatedData['wednesday_close'],
+            'thursday_open' => $validatedData['thursday_open'],
+            'thursday_close' => $validatedData['thursday_close'],
+            'friday_open' => $validatedData['friday_open'],
+            'friday_close' => $validatedData['friday_close'],
+            'saturday_open' => $validatedData['saturday_open'],
+            'saturday_close' => $validatedData['saturday_close'],
+            'lines_img' => $linesImgUrl,
+            'transportation_img' => $transportationImgUrl,
+            'prices' => $validatedData['prices'],
+            'city_id' => $validatedData['city_id'],
+            'app_link' => $validatedData['app_link'],
+        ]);
     
         // Return a success response
-        return response()->json(['message' => 'Transportation created successfully']);
+        return response()->json(['message' => 'Transportation created successfully'], 200);
     }
+    
+    
     public function update_transportation(Transportation_updateRequest $request)
     {
         // Find the transportation record by ID
@@ -61,9 +80,9 @@ class TransportationController extends Controller
                 Storage::delete($oldLinesImg);
             }
             // Store new lines image
-            $lines_img = $request->file('lines_img')->store('public/imgs/transportation');
-            $validatedData['lines_img'] = $lines_img;
-        }
+            $linesImgName = time() . '_lines.' . request('lines_img')->extension();
+            request('lines_img')->storeAs('public/imgs/transportation', $linesImgName);
+            $linesImgUrl = url("api/images/transportation/" . $linesImgName);        }
     
         if ($request->hasFile('transportation_img')) {
             // Delete old transportation image
@@ -71,12 +90,35 @@ class TransportationController extends Controller
                 Storage::delete($oldTransportationImg);
             }
             // Store new transportation image
-            $transportation_img = $request->file('transportation_img')->store('public/imgs/transportation');
-            $validatedData['transportation_img'] = $transportation_img;
+            $transportationImgName = time() . '_transportation.' . request('transportation_img')->extension();
+            request('transportation_img')->storeAs('public/imgs/transportation', $transportationImgName);
+            $transportationImgUrl = url("api/images/transportation/" . $transportationImgName);
         }
     
         // Update transportation record with validated data
-        $transportation->update($validatedData);
+        $transportation->update([
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'],
+            'sunday_open' => $validatedData['sunday_open'],
+            'sunday_close' => $validatedData['sunday_close'],
+            'monday_open' => $validatedData['monday_open'],
+            'monday_close' => $validatedData['monday_close'],
+            'tuesday_open' => $validatedData['tuesday_open'],
+            'tuesday_close' => $validatedData['tuesday_close'],
+            'wednesday_open' => $validatedData['wednesday_open'],
+            'wednesday_close' => $validatedData['wednesday_close'],
+            'thursday_open' => $validatedData['thursday_open'],
+            'thursday_close' => $validatedData['thursday_close'],
+            'friday_open' => $validatedData['friday_open'],
+            'friday_close' => $validatedData['friday_close'],
+            'saturday_open' => $validatedData['saturday_open'],
+            'saturday_close' => $validatedData['saturday_close'],
+            'lines_img' => $linesImgUrl,
+            'transportation_img' => $transportationImgUrl,
+            'prices' => $validatedData['prices'],
+            'city_id' => $validatedData['city_id'],
+            'app_link' => $validatedData['app_link'],
+        ]);
     
         // Check if update was successful
         if ($transportation->wasChanged()) {
@@ -94,6 +136,9 @@ class TransportationController extends Controller
     
         return response()->json(['error' => 'Failed to update transportation']);
     }
+    
+    
+    
     
     public function read_transportation(Request $request)
 {
@@ -114,8 +159,8 @@ class TransportationController extends Controller
         $transportationData = $transportation->toArray();
 
         // Convert the relative paths to full URLs for images
-        $transportationData['transportation_img'] = url('storage/' . str_replace('public/', '', $transportation->transportation_img));
-        $transportationData['lines_img'] = url('storage/' . str_replace('public/', '', $transportation->lines_img));
+        $transportationData['transportation_img'] = url($transportation->transportation_img);
+        $transportationData['lines_img'] = url($transportation->lines_img);
 
         // Add the transportation data to the result array
         $transportationsWithDetails[] = $transportationData;
