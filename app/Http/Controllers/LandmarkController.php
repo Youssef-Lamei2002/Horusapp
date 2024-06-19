@@ -79,7 +79,49 @@ class LandmarkController extends Controller
         // Return the landmarks with their images as a JSON response
         return response()->json(['landmarks' => $landmarksWithImages]);
     }
-
+    public function read_landmark_type(Request $request)
+    {
+        $city_id = $request->query('city_id');
+        $touris_type = $request->query('tourism_type');
+    
+        // Validate that city_id and touris_type are provided
+        if (!$city_id || !$touris_type) {
+            return response()->json(['message' => 'City ID and Tourism Type are required.'], 200);
+        }
+    
+        // Retrieve all landmarks with the given city_id and tourism type
+        $landmarks = Landmark::where('city_id', $city_id)
+                             ->where('tourism_type', $touris_type)
+                             ->get();
+    
+        if ($landmarks->isEmpty()) {
+            return response()->json(['message' => 'No landmarks found for the specified city and tourism type.'], 200);
+        }
+    
+        $landmarksWithImages = [];
+    
+        foreach ($landmarks as $landmark) {
+            // Retrieve images for the current landmark
+            $images = Landmark_Img::where('landmark_id', $landmark->id)->get();
+            
+            // Convert the landmark to an array
+            $landmarkData = $landmark->toArray();
+    
+            // Add the images to the landmark data
+            $landmarkData['images'] = $images->map(function ($image) {
+                // Convert the relative path to a full URL
+                $image->img = url($image->img);
+                return $image;
+            })->toArray();
+    
+            // Add the landmark with images to the result array
+            $landmarksWithImages[] = $landmarkData;
+        }
+    
+        // Return the landmarks with their images as a JSON response
+        return response()->json(['landmarks' => $landmarksWithImages]);
+    }
+    
     public function update_landmark(Landmark_updateRequest $request)
     {
         // Find the landmark by ID
