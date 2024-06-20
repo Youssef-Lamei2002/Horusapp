@@ -37,7 +37,7 @@ class RegisterRequest extends FormRequest
             $rules['nationality'] ='required';
         } elseif ($this->input('email_type') == 1) {
             $rules['ssn'] = 'required|min:14|max:14|unique:tourguides,ssn';
-            $rules['profile_pic'] = 'required|image|mimes:jpeg,png,jpg';
+            $rules['profile_pic'] = 'nullable|image|mimes:jpeg,png,jpg';
             $rules['languages'] = 'required|array';
             $rules['languages.*'] = 'required|string|exists:languages,id';
             $rules['rate'] ='nullable';

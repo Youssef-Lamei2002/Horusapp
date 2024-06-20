@@ -47,7 +47,7 @@
     <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center">
-                <img src="Hourus Logo.jpeg" alt="Horus" style="max-width: 150px; margin-bottom: 20px;">
+                <img src="{{ asset('HoursLogo.jpeg') }}" alt="Horus" style="max-width: 150px; margin-bottom: 20px;">
                 <h2>Horus APP</h2>
             </td>
         </tr>

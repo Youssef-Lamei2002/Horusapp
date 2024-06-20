@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -95,15 +96,21 @@ class AuthController extends Controller
         }
     
         $phoneNumber = $request->input('phone_number');
-    
         // Check if the email or phone number already exists in either the Tourist or Tourguide tables
+        if($request->input('email_type') == 0){
         $emailExistsInTourist = Tourist::where('email', $email)->exists();
-        $emailExistsInTourguide = Tourguide::where('email', $email)->exists();
         $phoneNumberExistsInTourist = Tourist::where('phone_number', $phoneNumber)->exists();
+        $emailExists = $emailExistsInTourist;
+        $phoneNumberExists = $phoneNumberExistsInTourist;
+        }else if($request->input('email_type') == 1)
+        {
+        $emailExistsInTourguide = Tourguide::where('email', $email)->exists();
         $phoneNumberExistsInTourguide = Tourguide::where('phone_number', $phoneNumber)->exists();
-    
-        $emailExists = $emailExistsInTourist || $emailExistsInTourguide;
-        $phoneNumberExists = $phoneNumberExistsInTourist || $phoneNumberExistsInTourguide;
+        $emailExists = $emailExistsInTourguide;
+        $phoneNumberExists = $phoneNumberExistsInTourguide;
+
+        }
+
     
         // Return appropriate messages if email or phone number already exists
         if ($emailExists) {
@@ -127,7 +134,7 @@ class AuthController extends Controller
             $profilePic = $request->file('profile_pic');
     
             // Generate a unique name for the profile picture
-            $profilePicName = time() . '.' . $profilePic->extension();
+            $profilePicName = str::uuid() . '.' . $profilePic->extension();
     
             // Store the profile picture in the specified directory
             $profilePicPath = $profilePic->storeAs('public/profile_pics', $profilePicName);

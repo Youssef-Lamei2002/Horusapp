@@ -26,7 +26,7 @@ class Forget_passwordController extends Controller
         $email = $request->input('email');
         $emailType = $request->input('email_type');
 
-        $cooldownMinutes = 5; // Cooldown period in minutes
+        $cooldownMinutes = 2; // Cooldown period in minutes
 
         if ($emailType == 0) {
             // Check if the email exists in the Tourist model

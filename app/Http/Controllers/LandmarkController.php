@@ -41,7 +41,47 @@ class LandmarkController extends Controller
         return response()->json(['message' => 'Landmark created successfully'], 200);
     }
 
-
+    public function read_landmark_recommended(Request $request)
+    {
+        $city_id = $request->query('city_id');
+    
+        // Validate that city_id is provided
+        if (!$city_id) {
+            return response()->json(['message' => 'City ID is required.'], 200);
+        }
+    
+        // Retrieve all landmarks with the given city_id, ordered by rating
+        $landmarks = Landmark::where('city_id', $city_id)
+                        ->orderBy('rating', 'desc') // Order by rating descending
+                        ->get();
+    
+        if ($landmarks->isEmpty()) {
+            return response()->json(['message' => 'No landmarks found for the specified city.'], 200);
+        }
+    
+        $landmarksWithImages = [];
+    
+        foreach ($landmarks as $landmark) {
+            // Retrieve images for the current landmark
+            $images = Landmark_Img::where('landmark_id', $landmark->id)->get();
+            // Convert the landmark to an array
+            $landmarkData = $landmark->toArray();
+    
+            // Add the images to the landmark data
+            $landmarkData['images'] = $images->map(function ($image) {
+                // Convert the relative path to a full URL
+                $image->img = url($image->img);
+                return $image;
+            })->toArray();
+    
+            // Add the landmark with images to the result array
+            $landmarksWithImages[] = $landmarkData;
+        }
+    
+        // Return the landmarks with their images as a JSON response
+        return response()->json(['landmarks' => $landmarksWithImages]);
+    }
+    
     public function read_landmark(Request $request)
     {
         $city_id = $request->query('city_id');

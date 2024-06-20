@@ -33,6 +33,7 @@ Route::post('/delete_landmark',[LandmarkController::class, 'delete_landmark']);
 Route::post('/update_landmark',[LandmarkController::class, 'update_landmark']);
 Route::get('/read_landmark', [LandmarkController::class, 'read_landmark']);
 Route::get('/read_landmark_type', [LandmarkController::class, 'read_landmark_type']);
+Route::get('/read_landmark_recommended', [LandmarkController::class, 'read_landmark_recommended']);
 Route::post('/create_hotel',[HotelController::class, 'create_hotel']);
 Route::get('/read_hotel',[HotelController::class, 'read_hotel']);
 Route::post('/delete_hotel',[HotelController::class, 'delete_hotel']);
