@@ -162,7 +162,7 @@ class HotelController extends Controller
                 $imgName = Str::uuid() . '.' . $image->extension(); // Generate unique image name using UUID
                 $image->storeAs('public/imgs/hotel', $imgName); // Store image with unique name in 'public/imgs/hotel' directory
                 Hotel_Img::create([
-                    'img' => url("storage/imgs/hotel/" . $imgName), // Example URL format
+                    'img' => url("api/images/hotel/" . $imgName), // Example URL format
                     'hotel_id' => $hotel->id,
                 ]);
             }

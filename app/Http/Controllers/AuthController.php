@@ -140,7 +140,7 @@ class AuthController extends Controller
             $profilePicPath = $profilePic->storeAs('public/profile_pics', $profilePicName);
     
             // Assuming you want to store the full URL in the database
-            $data['profile_pic'] = url("storage/profile_pics/" . $profilePicName); // Adjust the URL path as per your storage configuration
+            $data['profile_pic'] = url("api/profile_pics/" . $profilePicName); // Adjust the URL path as per your storage configuration
         }
     
         // Create a new user based on email_type
@@ -168,6 +168,20 @@ class AuthController extends Controller
         // Return a success message with a 200 status code
         return response()->json(['message' => 'Successfully Registered'], 200);
     }
-    
+
+    public function getTourGuides($cityId)
+    {
+        // Fetch tour guides with the specified city_id
+        $tourGuides = Tourguide::where('city_id', $cityId)->with('languages')->get();
+        // You can manipulate $tourGuides here if needed
+
+        // Construct the final response
+        $response = [
+            'tourGuides' => $tourGuides,
+        ];
+
+        // Return the result as a JSON response
+        return response()->json($response);
+    }
     
 }

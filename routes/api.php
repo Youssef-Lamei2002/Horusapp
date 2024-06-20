@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/tourguides/city/{cityId}', [AuthController::class, 'getTourGuides']);
 Route::post('/create_landmark',[LandmarkController::class, 'create_landmark']);
 Route::post('/delete_landmark',[LandmarkController::class, 'delete_landmark']);
 Route::post('/update_landmark',[LandmarkController::class, 'update_landmark']);

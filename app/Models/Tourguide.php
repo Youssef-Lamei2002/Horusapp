@@ -42,5 +42,9 @@ class Tourguide extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
     ];
+    public function languages()
+    {
+        return $this->belongsToMany(Language::class, 'tourguide__languages');
+    }
 
 }

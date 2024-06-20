@@ -9,4 +9,8 @@ class Language extends Model
 {
     use HasFactory;
     protected $fillable = ['name'];
+    public function tourguides()
+    {
+        return $this->belongsToMany(Tourguide::class, 'tourguide__languages');
+    }
 }
