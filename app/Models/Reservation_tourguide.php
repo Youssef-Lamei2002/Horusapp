@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reservation_tourguide extends Model
 {
-    protected  $fillable = ['tourist_id','tourguide_id','landmark_id','price_hour','hours','commission','isAccepted','starting_time','finished_time','day']; 
+    protected  $fillable = ['tourist_id','tourguide_id','landmark_id','price_of_hour','hours','isFinished','isAccepted','starting_time','finished_time','day']; 
     use HasFactory;
+    public function tourist()
+{
+    return $this->belongsTo(Tourist::class); // Assuming Tourist is the related model
+}
+public function tourguide()
+{
+    return $this->belongsTo(Tourguide::class);
+}
+public function landmark()
+{
+    return $this->belongsTo(Landmark::class); 
+}
 }

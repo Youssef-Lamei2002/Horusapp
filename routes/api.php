@@ -10,6 +10,8 @@ use App\Http\Controllers\LandmarkController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\Reservation_tourguideController;
+use App\Http\Controllers\TourguideController;
+use App\Http\Controllers\TouristController;
 use App\Http\Controllers\TransportationController;
 use App\Models\Transportation;
 use Illuminate\Http\Request;
@@ -74,4 +76,14 @@ Route::get('images/hotel/{name}', [ImageController::class, 'imageHotel']);
 Route::get('images/booking_img/{name}',  [ImageController::class, 'imageBookingHotel']);
 Route::get('images/transportation/{name}',  [ImageController::class, 'imagetransportation']);
 Route::get('images/profile_pic/{name}',  [ImageController::class, 'imagetProfile_pic']);
+Route::post('/reservations', [Reservation_tourguideController::class, 'createReservation']);
+Route::post('/approval_reservation', [Reservation_tourguideController::class, 'approval_reservation'])->name('approval_reservation');
+Route::get('/reservation_request_for_tour_guide/{tourguideId}', [Reservation_tourguideController::class, 'reservation_request_for_tour_guide']);
+Route::get('/reservation_requests_for_tourist/{touristId}', [Reservation_tourguideController::class, 'reservation_requests_for_tourist']);
 
+
+
+Route::post('/tourguides', [TourguideController::class, 'deleteTourguide']);
+Route::post('/tourists', [TouristController::class, 'deleteTourist']);
+Route::get('/tourguides', [TourguideController::class, 'getAllTourguides']);
+Route::get('/tourists', [TouristController::class, 'getAllTourists']);

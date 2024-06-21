@@ -46,5 +46,8 @@ class Tourguide extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Language::class, 'tourguide__languages');
     }
-
+    public function reservations()
+    {
+        return $this->hasMany(Reservation_tourguide::class);
+    }
 }

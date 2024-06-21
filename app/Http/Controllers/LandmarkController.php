@@ -53,6 +53,7 @@ class LandmarkController extends Controller
         // Retrieve all landmarks with the given city_id, ordered by rating
         $landmarks = Landmark::where('city_id', $city_id)
                         ->orderBy('rating', 'desc') // Order by rating descending
+                        ->limit(10)
                         ->get();
     
         if ($landmarks->isEmpty()) {
