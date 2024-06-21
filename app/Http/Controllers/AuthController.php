@@ -128,19 +128,19 @@ class AuthController extends Controller
         // Proceed with registration
         $data = $request->except('profile_pic'); // Exclude profile_pic from other data
         $data['password'] = Hash::make($data['password']);
-    
+
         // Handle profile picture upload
         if ($request->hasFile('profile_pic')) {
             $profilePic = $request->file('profile_pic');
     
             // Generate a unique name for the profile picture
-            $profilePicName = str::uuid() . '.' . $profilePic->extension();
+            $profilePicName = time() . '.' . request('profile_pic')->extension();
     
             // Store the profile picture in the specified directory
-            $profilePicPath = $profilePic->storeAs('public/imgs/profile_pics', $profilePicName);
+            $profilePicPath = $profilePic->storeAs('public/imgs/profile_pic', $profilePicName);
     
             // Assuming you want to store the full URL in the database
-            $data['profile_pic'] = url("api/profile_pics/" . $profilePicName); // Adjust the URL path as per your storage configuration
+            $data['profile_pic'] = url('public/imgs/profile_pic/' . $profilePicName);
         }
     
         // Create a new user based on email_type
