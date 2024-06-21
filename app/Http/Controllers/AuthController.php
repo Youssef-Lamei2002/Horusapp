@@ -140,7 +140,7 @@ class AuthController extends Controller
             $profilePicPath = $profilePic->storeAs('public/imgs/profile_pic', $profilePicName);
     
             // Assuming you want to store the full URL in the database
-            $data['profile_pic'] = url('public/imgs/profile_pic/' . $profilePicName);
+            $data['profile_pic'] = url('api/images/profile_pic/' . $profilePicName);
         }
     
         // Create a new user based on email_type
