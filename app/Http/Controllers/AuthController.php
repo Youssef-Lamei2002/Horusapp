@@ -31,7 +31,7 @@ class AuthController extends Controller
             if ($emailType == 0) {
                 $user = Tourist::where('email', $credentials['email'])->first();
             } elseif ($emailType == 1) {
-                $user = Tourguide::where('email', $credentials['email'])->first();
+                $user = Tourguide::where('email', $credentials['email'])->with('languages')->first();;
             } else {
                 return response()->json(['message' => 'Invalid email type'], 200);
             }
@@ -137,7 +137,7 @@ class AuthController extends Controller
             $profilePicName = str::uuid() . '.' . $profilePic->extension();
     
             // Store the profile picture in the specified directory
-            $profilePicPath = $profilePic->storeAs('public/profile_pics', $profilePicName);
+            $profilePicPath = $profilePic->storeAs('public/imgs/profile_pics', $profilePicName);
     
             // Assuming you want to store the full URL in the database
             $data['profile_pic'] = url("api/profile_pics/" . $profilePicName); // Adjust the URL path as per your storage configuration
