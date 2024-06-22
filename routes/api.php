@@ -79,7 +79,9 @@ Route::get('images/profile_pic/{name}',  [ImageController::class, 'imagetProfile
 Route::post('/reservations', [Reservation_tourguideController::class, 'createReservation']);
 Route::post('/approval_reservation', [Reservation_tourguideController::class, 'approval_reservation'])->name('approval_reservation');
 Route::get('/reservation_request_for_tour_guide/{tourguideId}', [Reservation_tourguideController::class, 'reservation_request_for_tour_guide']);
-Route::get('/reservation_requests_for_tourist/{touristId}', [Reservation_tourguideController::class, 'reservation_requests_for_tourist']);
+Route::get('/reservation_request_for_tourist/{touristId}', [Reservation_tourguideController::class, 'reservation_request_for_tour_guide']);
+
+Route::post('/StripePayment/{Id}', [Reservation_tourguideController::class, 'StripePayment']);
 
 
 

@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StripeRequest;
 use App\Models\Reservation_tourguide;
 use App\Models\Tourguide;
 use App\Models\Tourist;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-
+use Stripe\StripeClient;
 
 class Reservation_tourguideController extends Controller
-{
+{    
+    protected $stripe;
+
+    public function __construct()
+    {
+        $this->stripe = new StripeClient(env('STRIPE_SECRET'));
+    }
     public function createReservation(Request $request)
     {
         // Validate the request data
@@ -73,6 +81,8 @@ class Reservation_tourguideController extends Controller
         // Fetch reservations for the specific tour guide where isAccepted is not 1
         $reservations = Reservation_tourguide::where('tourguide_id', $tourguideId)
             ->where('isFinished', '!=', 1) // Exclude reservations where isAccepted is 1
+            ->where('isAccepted',0)
+            ->where('created_at',Carbon::now()->addHours(10))
             ->with('tourist:id,name,profile_pic') // Eager load tourist with specified fields
             ->with('landmark:id,name')
             ->get();
@@ -81,21 +91,54 @@ class Reservation_tourguideController extends Controller
     
         return response()->json(['reservations' => $reservations], 200);
     }
-    public function reservation_requests_for_tourist($touristId)
+    public function StripePayment(StripeRequest $stripeRequest,$id)
     {
+        $cardData=$stripeRequest->all();
         // Get the current date
         $currentDate = now()->toDateString();
     
         // Fetch reservations for the specific tourist and include tour guide details
-        $reservations = Reservation_tourguide::where('tourist_id', $touristId)
-            ->where('day', '>=', $currentDate)  // Only include reservations with dates that are today or in the future
-            ->with(['tourguide' => function($query) {
-                $query->select('id', 'name', 'profile_pic'); // Select specific fields from tourguide
-            }])
-            ->get();
+        $reservations = Reservation_tourguide::where('day', '>=', $currentDate)  ->find($id);
+            try {
+                $token = $this->stripe->tokens->create([
+                    'card' => [
+                        'name' => $cardData['card_name'],
+                        'number' => $cardData['card_number'],
+                        'exp_month' => $cardData['exp_month'],
+                        'exp_year' => $cardData['exp_year'],
+                        'cvc' => $cardData['cvc'],
+                    ],
+                ]);
+                $charge = $this->stripe->charges->create([
+                    "amount" => $reservations->price_of_hour*$reservations->hours*100,
+                    "currency" => 'EGP',
+                    "source" => "$token->id",
+                ]);
     
+                return $charge;
+    
+            } catch (\Exception $e) {
+                throw new \Exception('Failed to create Stripe token: ' . $e->getMessage());
+            }
+
+            
             return Response::json(['reservations' => $reservations], 200);
         }
-
+    public function reservation_request_for_tourist($touristId)
+    {
+        $currentDate = now()->toDateString();
+        // Fetch reservations for the specific tour guide where isAccepted is not 1
+        $reservations = Reservation_tourguide::where('tourist', $touristId)
+            ->where('isFinished', '!=', 1) // Exclude reservations where isAccepted is 1
+            ->where('isAccepted',1)
+            ->where('day', '>=', $currentDate)
+            ->with('tourguide:id,name,profile_pic') // Eager load tourist with specified fields
+            ->with('landmark:id,name')
+            ->get();
+    
+        // Assuming Tourguide model exists to fetch tour guide details if needed
+    
+        return response()->json(['reservations' => $reservations], 200);
+    }
 
 }
