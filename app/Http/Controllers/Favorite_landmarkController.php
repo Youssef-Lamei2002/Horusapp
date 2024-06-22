@@ -83,7 +83,7 @@ class Favorite_landmarkController extends Controller
             })->id;
             
             // Add FavouriteLandmark ID to the landmark data
-            $landmarkData['favourite_landmark_id'] = $favouriteLandmarkId;
+            $landmarkData['id'] = $favouriteLandmarkId;
             
             $landmarksWithImages[] = $landmarkData;
         }
