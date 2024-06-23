@@ -45,10 +45,6 @@ Route::post('/create_booking_img',[HotelController::class, 'create_booking_img']
 Route::get('/read_booking_img',[HotelController::class, 'read_booking_img']);
 Route::post('/update_booking_img',[HotelController::class, 'update_booking_img']);
 Route::post('/delete_booking_img',[HotelController::class, 'delete_booking_img']);
-Route::post('/create_transportation',[TransportationController::class, 'create_transportation']);
-Route::post('/update_transportation',[TransportationController::class, 'update_transportation']);
-Route::get('read_transportation',[TransportationController::class, 'read_transportation']);
-Route::post('/delete_transportation',[TransportationController::class, 'delete_transportation']);
 Route::post('/checkEmailExists', [Forget_passwordController::class, 'checkEmailExists']);
 Route::post('/verifyOtpAndUpdatePassword', [Forget_passwordController::class, 'verifyOtpAndUpdatePassword']);
 Route::post('/updatePassword', [Forget_passwordController::class, 'updatePassword']);
@@ -79,13 +75,10 @@ Route::get('images/profile_pic/{name}',  [ImageController::class, 'imagetProfile
 Route::post('/reservations', [Reservation_tourguideController::class, 'createReservation']);
 Route::post('/approval_reservation', [Reservation_tourguideController::class, 'approval_reservation'])->name('approval_reservation');
 Route::get('/reservation_request_for_tour_guide/{tourguideId}', [Reservation_tourguideController::class, 'reservation_request_for_tour_guide']);
-Route::get('/reservation_request_for_tourist/{touristId}', [Reservation_tourguideController::class, 'reservation_request_for_tour_guide']);
-
+Route::get('/reservation_request_for_tourist/{touristId}', [Reservation_tourguideController::class, 'reservation_request_for_tourist']);
 Route::post('/StripePayment/{Id}', [Reservation_tourguideController::class, 'StripePayment']);
-
-
-
 Route::post('/tourguides', [TourguideController::class, 'deleteTourguide']);
 Route::post('/tourists', [TouristController::class, 'deleteTourist']);
 Route::get('/tourguides', [TourguideController::class, 'getAllTourguides']);
 Route::get('/tourists', [TouristController::class, 'getAllTourists']);
+

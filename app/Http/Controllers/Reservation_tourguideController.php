@@ -78,17 +78,19 @@ class Reservation_tourguideController extends Controller
     }
     public function reservation_request_for_tour_guide($tourguideId)
     {
+        if('2024-06-23 14:48:56' >=Carbon::now()->subHours(10))
+        {
+            //  dd('hello');
         // Fetch reservations for the specific tour guide where isAccepted is not 1
         $reservations = Reservation_tourguide::where('tourguide_id', $tourguideId)
-            ->where('isFinished', '!=', 1) // Exclude reservations where isAccepted is 1
-            ->where('isAccepted',0)
-            ->where('created_at',Carbon::now()->addHours(10))
-            ->with('tourist:id,name,profile_pic') // Eager load tourist with specified fields
-            ->with('landmark:id,name')
-            ->get();
-    
+        ->where('isFinished', '!=', 1) // Exclude reservations where isFinished is 1
+        ->where('isAccepted', 0) // Only include reservations where isAccepted is 0
+        ->where('created_at', '>', Carbon::now()->subHours(10)) // Only include reservations created within the last 10 hours
+        ->with('tourist:id,name,profile_pic,email') // Eager load tourist with specified fields
+        ->with('landmark:id,name') // Eager load landmark with specified fields
+        ->get();
         // Assuming Tourguide model exists to fetch tour guide details if needed
-    
+        }
         return response()->json(['reservations' => $reservations], 200);
     }
     public function StripePayment(StripeRequest $stripeRequest,$id)
@@ -125,16 +127,22 @@ class Reservation_tourguideController extends Controller
             return Response::json(['reservations' => $reservations], 200);
         }
     public function reservation_request_for_tourist($touristId)
-    {
-        $currentDate = now()->toDateString();
+    {        
         // Fetch reservations for the specific tour guide where isAccepted is not 1
-        $reservations = Reservation_tourguide::where('tourist', $touristId)
-            ->where('isFinished', '!=', 1) // Exclude reservations where isAccepted is 1
-            ->where('isAccepted',1)
-            ->where('day', '>=', $currentDate)
-            ->with('tourguide:id,name,profile_pic') // Eager load tourist with specified fields
+        $reservations = Reservation_tourguide::where('tourist_id', $touristId)
+            ->where('created_at', '>', Carbon::now()->subHours(10))
+            ->where('isAccepted',1 ) // Only include reservations created within the last 10 hours
+            ->with('tourguide:id,name,profile_pic,email') // Eager load tourist with specified fields
             ->with('landmark:id,name')
-            ->get();
+            ->orWhere('isFinished',1)
+            ->get()
+            ->map(function ($reservations){
+                    if($reservations->isAccepted and $reservations->isFinished ){
+                        return ;
+                } 
+                return $reservations;
+            });
+
     
         // Assuming Tourguide model exists to fetch tour guide details if needed
     
