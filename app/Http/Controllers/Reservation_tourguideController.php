@@ -90,39 +90,51 @@ class Reservation_tourguideController extends Controller
 
         return response()->json(['reservations' => $reservations], 200);
     }
-    public function StripePayment(StripeRequest $stripeRequest,$id)
+    public function StripePayment(StripeRequest $stripeRequest, $id)
     {
-        $cardData=$stripeRequest->all();
+        $cardData = $stripeRequest->all();
         // Get the current date
         $currentDate = now()->toDateString();
-    
+        
         // Fetch reservations for the specific tourist and include tour guide details
-        $reservations = Reservation_tourguide::where('day', '>=', $currentDate)  ->find($id);
-            try {
-                $token = $this->stripe->tokens->create([
-                    'card' => [
-                        'name' => $cardData['card_name'],
-                        'number' => $cardData['card_number'],
-                        'exp_month' => $cardData['exp_month'],
-                        'exp_year' => $cardData['exp_year'],
-                        'cvc' => $cardData['cvc'],
-                    ],
-                ]);
-                $charge = $this->stripe->charges->create([
-                    "amount" => $reservations->price_of_hour*$reservations->hours*100,
-                    "currency" => 'EGP',
-                    "source" => "$token->id",
-                ]);
-    
-                return $charge;
-    
-            } catch (\Exception $e) {
-                throw new \Exception('Failed to create Stripe token: ' . $e->getMessage());
-            }
-
-            
-            return Response::json(['reservations' => $reservations], 200);
+        $reservation = Reservation_tourguide::where('day', '>=', $currentDate)->find($id);
+        if (!$reservation) {
+            return response()->json(['error' => 'Reservation not found'], 404);
         }
+    
+        try {
+            $token = $this->stripe->tokens->create([
+                'card' => [
+                    'name' => $cardData['card_name'],
+                    'number' => $cardData['card_number'],
+                    'exp_month' => $cardData['exp_month'],
+                    'exp_year' => $cardData['exp_year'],
+                    'cvc' => $cardData['cvc'],
+                ],
+            ]);
+    
+            $charge = $this->stripe->charges->create([
+                "amount" => $reservation->price_of_hour * $reservation->hours * 100,
+                "currency" => 'EGP',
+                "source" => $token->id,
+            ]);
+    
+            // Check if the charge was successful
+            if ($charge->status === 'succeeded') {
+                // Update the isFinished field to true
+                $reservation->isFinished = true;
+                $reservation->save();
+                return response()->json(['success' => 'Payment processed and reservation updated'], 200);
+            } else {
+                return response()->json(['error' => 'Charge was not successful'], 400);
+            }
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to process payment'], 500);
+        }
+    }
+    
+    
     public function reservation_request_for_tourist($touristId)
     {        
         // Fetch reservations for the specific tour guide where isAccepted is not 1

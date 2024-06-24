@@ -45,17 +45,16 @@ class AuthController extends Controller
             if (!Hash::check($credentials['password'], $user->password)) {
                 return response()->json(['message' => 'Password is incorrect'], 200);
             }
-    
-            // Load city details if available
-            if($emailType ==1)
-            {
-            $city = $user->city;
-            $cityName = $city ? $city->city_name : null;
-            $cityCover = $city ? $city->city_cover : null;
+            if($emailType==1){
+            $user->city;
+            }
     
             // Generate JWT token manually
             $token = $this->generateJwtToken($user);
-            }
+    
+            // Append city details and token to user data
+            $user->token = $token;
+    
             // Return user data with token and city details
             return response()->json([
                 'message' => 'Login success',
