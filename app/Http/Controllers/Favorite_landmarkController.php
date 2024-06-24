@@ -42,79 +42,81 @@ class Favorite_landmarkController extends Controller
     {
         // Retrieve tourist_id from the request
         $tourist_id = $request->input('tourist_id');
-        
+    
         // Validate that tourist_id is provided
         if (!$tourist_id) {
             return response()->json(['message' => 'Tourist ID is required.'], 200);
         }
-        
+    
         // Retrieve all favorite landmark IDs of the tourist
         $favoriteLandmarks = FavouriteLandmark::where('tourist_id', $tourist_id)->get();
-        
+    
         if ($favoriteLandmarks->isEmpty()) {
             return response()->json(['message' => 'No favorite landmarks found for the specified tourist.'], 200);
         }
-        
+    
         $landmarkIds = $favoriteLandmarks->pluck('landmark_id')->toArray();
-        
+    
         // Retrieve landmarks that are favorites of the tourist
         $landmarks = Landmark::whereIn('id', $landmarkIds)->get();
-        
+    
         if ($landmarks->isEmpty()) {
             return response()->json(['message' => 'No favorite landmarks found for the specified tourist.'], 200);
         }
-        
+    
         // Prepare response with landmarks, their images, and their FavouriteLandmark IDs
         $landmarksWithImages = [];
-        
+    
         foreach ($landmarks as $landmark) {
             $images = Landmark_Img::where('landmark_id', $landmark->id)->get();
-            
+    
             $landmarkData = $landmark->toArray();
-            
+    
             $landmarkData['images'] = $images->map(function ($image) {
                 $image->img = url($image->img);
                 return $image;
             })->toArray();
-            
+    
             // Find the FavouriteLandmark ID for the current landmark
-            $favouriteLandmarkId = $favoriteLandmarks->first(function ($value, $key) use ($landmark) {
-                return $value->landmark_id === $landmark->id;
-            })->id;
-            
+            $favouriteLandmark = $favoriteLandmarks->firstWhere('landmark_id', $landmark->id);
+    
             // Add FavouriteLandmark ID to the landmark data
-            $landmarkData['id'] = $favouriteLandmarkId;
-            
+            if ($favouriteLandmark) {
+                $landmarkData['favourite_landmark_id'] = $favouriteLandmark->id;
+            }
+    
             $landmarksWithImages[] = $landmarkData;
         }
-        
+    
         // Return the response as JSON
         return response()->json(['landmarks' => $landmarksWithImages]);
     }
+    
     
     public function remove_favourite(Request $request)
     {
         // Validate the incoming request data
         $validator = Validator::make($request->all(), [
-            'favourite_landmark_id' => 'required',
+            'landmark_id' => 'required|exists:landmarks,id',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 200);
         }
-
-        // Retrieve the favourite landmark record by ID
-        $favouriteLandmark = FavouriteLandmark::find($request->input('favourite_landmark_id'));
-
+    
+        // Retrieve the favourite landmark record by tourist_id and landmark_id
+        $favouriteLandmark = FavouriteLandmark::where('landmark_id', $request->input('landmark_id'))->first();
+    
         if (!$favouriteLandmark) {
             return response()->json(['message' => 'Favourite landmark not found.'], 200);
         }
-
+    
         // Delete the favourite landmark record
         $favouriteLandmark->delete();
-
+    
         // Return success response
         return response()->json(['message' => 'Favourite landmark removed successfully.']);
     }
+    
 
 }

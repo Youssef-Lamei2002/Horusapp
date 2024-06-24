@@ -31,7 +31,7 @@ class AuthController extends Controller
             if ($emailType == 0) {
                 $user = Tourist::where('email', $credentials['email'])->first();
             } elseif ($emailType == 1) {
-                $user = Tourguide::where('email', $credentials['email'])->with('languages')->first();;
+                $user = Tourguide::where('email', $credentials['email'])->with('languages')->first();
             } else {
                 return response()->json(['message' => 'Invalid email type'], 200);
             }

@@ -78,9 +78,7 @@ class Reservation_tourguideController extends Controller
     }
     public function reservation_request_for_tour_guide($tourguideId)
     {
-        if('2024-06-23 14:48:56' >=Carbon::now()->subHours(10))
-        {
-            //  dd('hello');
+
         // Fetch reservations for the specific tour guide where isAccepted is not 1
         $reservations = Reservation_tourguide::where('tourguide_id', $tourguideId)
         ->where('isFinished', '!=', 1) // Exclude reservations where isFinished is 1
@@ -89,8 +87,7 @@ class Reservation_tourguideController extends Controller
         ->with('tourist:id,name,profile_pic,email') // Eager load tourist with specified fields
         ->with('landmark:id,name') // Eager load landmark with specified fields
         ->get();
-        // Assuming Tourguide model exists to fetch tour guide details if needed
-        }
+
         return response()->json(['reservations' => $reservations], 200);
     }
     public function StripePayment(StripeRequest $stripeRequest,$id)
