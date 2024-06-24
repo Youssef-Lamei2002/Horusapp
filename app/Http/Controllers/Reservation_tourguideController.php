@@ -135,22 +135,24 @@ class Reservation_tourguideController extends Controller
     }
     
     
-public function reservation_request_for_tourist($touristId)
-{        
-    // Fetch reservations for the specific tourist where isAccepted is 1
-    $reservations = Reservation_tourguide::where('tourist_id', $touristId)
-        ->where('created_at', '>', Carbon::now()->subHours(10))
-        ->where('isAccepted', 1) // Only include reservations created within the last 10 hours
-        ->with('tourguide:id,name,profile_pic,email') // Eager load tour guide with specified fields
-        ->with('landmark:id,name')
-        ->orWhere('isFinished', 1)
-        ->get()
-        ->filter(function ($reservation) {
-            // Exclude reservations where both isAccepted and isFinished are true
-            return !($reservation->isAccepted && $reservation->isFinished);
-        });
-
-    return response()->json(['reservations' => $reservations], 200);
-}
+    public function reservation_request_for_tourist($touristId)
+    {        
+        // Fetch reservations for the specific tourist where isAccepted is 1
+        $reservations = Reservation_tourguide::where('tourist_id', $touristId)
+            ->where('created_at', '>', Carbon::now()->subHours(10))
+            ->where('isAccepted', 1) // Only include reservations created within the last 10 hours
+            ->with('tourguide:id,name,profile_pic,email') // Eager load tour guide with specified fields
+            ->with('landmark:id,name')
+            ->orWhere('isFinished', 1)
+            ->get()
+            ->filter(function ($reservation) {
+                // Exclude reservations where both isAccepted and isFinished are true
+                return !($reservation->isAccepted && $reservation->isFinished);
+            })
+            ->values(); // Reset the keys
+    
+        return response()->json(['reservations' => $reservations], 200);
+    }
+    
 
 }
